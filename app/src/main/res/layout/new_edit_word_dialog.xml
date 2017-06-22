@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!--android:src="@drawable/header_logo"-->
+    <!--<ImageView-->
+    <!--android:src="@android:d"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="64dp"-->
+    <!--android:scaleType="center"-->
+    <!--android:background="#FFFFBB33"-->
+    <!--android:contentDescription="@string/app_name" />-->
+    <EditText
+        android:id="@+id/name"
+        android:inputType="text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Word/Phrase" />
+
+    <view
+        android:layout_width="@dimen/button_size"
+        android:layout_height="@dimen/button_size"
+        class="mbanje.kurt.fabbutton.FabButton"
+        android:id="@+id/loadBtn"
+        android:layout_gravity="center"
+        android:color="#ff6e9cff"
+        android:src="@mipmap/ic_launcher"
+        android:visibility="visible"
+        android:layout_centerInParent="true"
+        android:indeterminate="true"
+        android:max="100"
+        app:fbb_autoStart="true"
+        app:fbb_progressColor="#ff170aff"
+        app:fbb_progressWidthRatio="0.1"
+        app:fbb_endBitmap="@mipmap/ic_launcher"
+        app:fbb_showEndBitmap="true" />
+
+    <EditText
+        android:id="@+id/produnce"
+        android:inputType="text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Pronunciation" />
+
+    <EditText
+        android:id="@+id/desc"
+        android:inputType="textMultiLine"
+        android:maxLines="10"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="sans-serif"
+        android:hint="Description" />
+</LinearLayout>
