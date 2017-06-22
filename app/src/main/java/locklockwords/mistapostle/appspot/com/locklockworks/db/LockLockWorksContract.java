@@ -7,6 +7,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import java.io.Serializable;
+
+import locklockwords.mistapostle.appspot.com.locklockworks.MainActivity;
+
 /**
  * Created by mistapostle on 17/6/12.
  */
@@ -18,7 +22,7 @@ public final class LockLockWorksContract {
     }
 
     /* inner class that defines the table contents */
-    public static class Word implements BaseColumns {
+    public static class Word implements BaseColumns, Serializable {
         public static final String TABLE_NAME = "TBL_WORD";
         public static final String SQL_DELETE_ENTRIES = "drop table " + TABLE_NAME;
         public static final String COLUMN_NAME_ID = "_id";
@@ -50,6 +54,10 @@ public final class LockLockWorksContract {
         public Word() {
         }
 
+        public Word(Cursor cursor) {
+            this(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
+        }
+
         public void insert(Context ctx) {
             new DBTemplate(ctx) {
                 @Override
@@ -57,11 +65,26 @@ public final class LockLockWorksContract {
                     ContentValues cv = new ContentValues(2);
                     cv.put(COLUMN_NAME_WORD, word);
                     cv.put(COLUMN_NAME_DESC, desc);
+                    cv.put(COLUMN_NAME_PRONOUNCE, pronounce);
                     db.insertOrThrow(TABLE_NAME, null, cv);
                     return null;
                 }
             }.exec();
 
+        }
+
+        public void update(MainActivity ctx) {
+            new DBTemplate(ctx) {
+                @Override
+                public Object callback(SQLiteDatabase db) {
+                    ContentValues cv = new ContentValues(2);
+                    cv.put(COLUMN_NAME_WORD, word);
+                    cv.put(COLUMN_NAME_DESC, desc);
+                    cv.put(COLUMN_NAME_PRONOUNCE, pronounce);
+                    db.update(TABLE_NAME, cv, COLUMN_NAME_ID + "= ? ", new String[]{Integer.toString(rowId)});
+                    return null;
+                }
+            }.exec();
         }
 
         public static CursorLoader getAllWordsLoader(final Context ctx) {
@@ -117,5 +140,6 @@ public final class LockLockWorksContract {
         public void setRowId(int rowId) {
             this.rowId = rowId;
         }
+
     }
 }

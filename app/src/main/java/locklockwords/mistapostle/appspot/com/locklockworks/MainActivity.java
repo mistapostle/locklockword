@@ -32,10 +32,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -49,6 +51,7 @@ import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContr
 import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksDbHelper;
 import locklockwords.mistapostle.appspot.com.locklockworks.html.YoudaoHelper;
 import locklockwords.mistapostle.appspot.com.locklockworks.utils.LoggerUtils;
+import locklockwords.mistapostle.appspot.com.locklockworks.utils.ProgressBarAsyncTask;
 import mbanje.kurt.fabbutton.FabButton;
 
 public class MainActivity extends AppCompatActivity {
@@ -178,20 +181,32 @@ public class MainActivity extends AppCompatActivity {
                             public void bindView(View view, Context context, Cursor cursor) {
                                 TextView tv = (TextView) view;
                                 tv.setText(cursor.getString(0) + cursor.getString(1));
+
                                 Logger.getLogger("LockLockWorks").info("bindView:" + cursor.getString(0) + cursor.getString(1));
 
                             }
                         };
+
                         wordLv.setAdapter(adapter);
                     } else {
                         CursorAdapter adapter = (CursorAdapter) wordLv.getAdapter();
-//                        adapter.changeCursor(data);
-                        adapter.swapCursor(data);
+                        adapter.changeCursor(data);
+//                        adapter.swapCursor(data);
                         // adapter.notifyDataSetChanged();
 //                        wordLv.invalidate();
 //                        wordLv.invalidateViews();
                     }
 
+                }
+            });
+
+            wordLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    //showNewOrEditWordDialogFragment()
+                    Cursor cursor = (Cursor) wordLv.getAdapter().getItem(position);
+                    LockLockWorksContract.Word word = new LockLockWorksContract.Word(cursor);
+                    ((MainActivity) getActivity()).showNewOrEditWordDialogFragment(word);
                 }
             });
 
@@ -292,6 +307,9 @@ public class MainActivity extends AppCompatActivity {
     public static class NewOrEditWordDialogFragment extends DialogFragment {
 
 
+        public static final String EXISTING_WORD_KEY = "ExistingWord";
+        public LockLockWorksContract.Word existingWord;
+
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the Builder class for convenient dialog construction
@@ -310,18 +328,27 @@ public class MainActivity extends AppCompatActivity {
 
 
                             new AsyncTask<MainActivity, Object, MainActivity>() {
+                                private LockLockWorksContract.Word word;
+
+                                @Override
+                                protected void onPreExecute() {
+                                    super.onPreExecute();
+                                    final EditText nameEt = (EditText) getDialog().findViewById(R.id.name);
+                                    final EditText descEt = (EditText) getDialog().findViewById(R.id.desc);
+                                    final EditText produnceEt = (EditText) getDialog().findViewById(R.id.produnce);
+
+                                    word = new LockLockWorksContract.Word(-1, nameEt.getText().toString(),
+                                            produnceEt.getText().toString(), descEt.getText().toString());
+                                }
 
                                 @Override
                                 protected MainActivity doInBackground(MainActivity... params) {
-                                    try {
-                                        LockLockWorksContract.Word word = null;
-                                        word = YoudaoHelper.getInstance().findWord("test");
-
+                                    if (existingWord != null) {
+                                        word.setRowId(existingWord.getRowId());
+                                        word.update(params[0]);
+                                    } else {
                                         //LockLockWorksContract.Word word = new LockLockWorksContract.Word("test","data");
                                         word.insert(params[0]);
-                                    } catch (IOException e) {
-                                        LoggerUtils.getLogger().log(Level.WARNING, "failed to findWord", e);
-
                                     }
                                     return params[0];
                                 }
@@ -342,8 +369,10 @@ public class MainActivity extends AppCompatActivity {
                             NewOrEditWordDialogFragment.this.getDialog().cancel();
                         }
                     })
-                    .setNeutralButton("LOAD", null);
+                    .setNeutralButton("LOAD", null)
+                    .setCancelable(false);
             Dialog dialog = builder.create();
+            dialog.setCanceledOnTouchOutside(false);
             //Note: doing below 3 lines got a requestFeature() must be called before adding content
 //            this.nameEt = (EditText) dialog.findViewById(R.id.name);
 //            this.descEt = (EditText)dialog.findViewById(R.id.desc);
@@ -352,21 +381,28 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onShow(final DialogInterface dialog) {
-
                     final AlertDialog alertDialog = (AlertDialog) dialog;
+                    final EditText nameEt = (EditText) alertDialog.findViewById(R.id.name);
+                    final EditText descEt = (EditText) alertDialog.findViewById(R.id.desc);
+                    final EditText produnceEt = (EditText) alertDialog.findViewById(R.id.produnce);
+                    final ProgressBar pb = (ProgressBar) alertDialog.findViewById(R.id.loadingPb);
+                    if (existingWord != null) {
+                        nameEt.setText(existingWord.getWord());
+                        descEt.setText(existingWord.getDesc());
+                        produnceEt.setText(existingWord.getPronounce());
+                    }
+
                     Button button = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
                     button.setOnClickListener(new View.OnClickListener() {
 
                         @Override
                         public void onClick(View view) {
                             // fab button
-                            final FabButton fb = (FabButton) alertDialog.findViewById(R.id.loadBtn);
-                            fb.showProgress(true);
-                            // TODO Do something
-                            final EditText nameEt = (EditText) alertDialog.findViewById(R.id.name);
-                            final EditText descEt = (EditText) alertDialog.findViewById(R.id.desc);
-                            final EditText produnceEt = (EditText) alertDialog.findViewById(R.id.produnce);
-                            new AsyncTask<Object, Object, Object[]>() {
+//                            final FabButton fb = (FabButton) alertDialog.findViewById(R.id.loadBtn);
+//                            fb.showProgress(true);
+
+
+                            new ProgressBarAsyncTask<Object, Object, Object[]>(pb) {
 
                                 @Override
                                 protected Object[] doInBackground(Object... params) {
@@ -384,6 +420,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 @Override
                                 protected void onPostExecute(Object[] os) {
+                                    super.onPostExecute();
                                     if (os != null) {
                                         MainActivity activity = (MainActivity) os[0];
                                         LockLockWorksContract.Word word = (LockLockWorksContract.Word) os[1];
@@ -417,8 +454,12 @@ public class MainActivity extends AppCompatActivity {
         // in a transaction.  We also want to remove any currently showing
         // dialog, so make our own transaction and take care of that here.
 
-        DialogFragment dialog = new NewOrEditWordDialogFragment();
+        showNewOrEditWordDialogFragment(null);
+    }
 
+    private void showNewOrEditWordDialogFragment(LockLockWorksContract.Word word) {
+        NewOrEditWordDialogFragment dialog = new NewOrEditWordDialogFragment();
+        dialog.existingWord = word;
         dialog.show(getSupportFragmentManager(), "NewOrEditWordDialogFragment");
     }
 }
