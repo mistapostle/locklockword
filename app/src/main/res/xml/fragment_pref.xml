@@ -1,0 +1,26 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"     android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--<PreferenceCategory-->
+        <!--android:title="title">-->
+
+        <SwitchPreferenceCompat
+            android:key="lockScreen_preference"
+            android:title="Lock Screen Words"
+            android:summary="" />
+
+
+    <!--</PreferenceCategory>-->
+    <EditTextPreference
+        android:key="lockScreenRank_preference"
+        android:title="Rank for Lock Screen"
+        android:summary="5"
+        android:dialogTitle="Rank for Lock Screen"
+        android:defaultValue="5"
+        android:inputType="number"
+        />
+
+
+
+</PreferenceScreen>

@@ -44,7 +44,7 @@ public class YoudaoHelper {
 
         String desc = es.text();
         System.out.println("found trans : " + es.text());
-        return new LockLockWorksContract.Word(word, pronounce, desc);
+        return new LockLockWorksContract.Word(word, pronounce, desc,0);
 
     }
 }

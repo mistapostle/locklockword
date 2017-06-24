@@ -3,14 +3,32 @@ package locklockwords.mistapostle.appspot.com.locklockworks;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.support.design.widget.Snackbar;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.preference.PreferenceManager;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.logging.Logger;
+
+import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContract;
+
+import static locklockwords.mistapostle.appspot.com.locklockworks.utils.Constrant.LOCK_SCREEN_RANK_PREF;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -35,46 +53,19 @@ public class FullscreenActivity extends AppCompatActivity {
      */
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
-    private View mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
+    //private View mContentView;
 
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
+
 
     private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    private LockLockWorksContract.Word  questionWord;
+
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
      * while interacting with activity UI.
      */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,49 +76,87 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         mVisible = true;
-        mContentView = findViewById(R.id.fullscreen_content);
+        //mContentView = findViewById(R.id.fullscreen_content);
 
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-    }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
+        questionWord = LockLockWorksContract.Word.findWordToReview(this);
+        if(questionWord!=null){
+            TextView questionTv = (TextView)findViewById(R.id.questionTv);
+            questionTv.setText(questionWord.getDesc());
 
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
-    }
-
-
-    private void hide() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
         }
-        mVisible = false;
+        final ListView answerLv  =(ListView)findViewById(R.id.answerLv);
+        CursorLoader cl = LockLockWorksContract.Word.getFuzzWordsLoader(this,questionWord.getRowId(),4);
+        cl.registerListener(1, new Loader.OnLoadCompleteListener<Cursor>() {
+            @Override
+            public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
+                Logger.getLogger("LockLockWorks").info("data = " + data);
 
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+                    CursorAdapter adapter = new CursorAdapter(FullscreenActivity.this, data, false) {
+                        @Override
+                        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+                            TextView tv = new TextView(context);
+                            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,35);
+                            tv.setPadding(0,20,0,0);
+                            // tv.setText(cursor.getString(0) + cursor.getString(1));
+                            Logger.getLogger("LockLockWorks").info("newView:" + cursor.getString(0) + cursor.getString(1));
+                            return tv;
+                        }
+
+                        @Override
+                        public void bindView(View view, Context context, Cursor cursor) {
+                            TextView tv = (TextView) view;
+                            tv.setText(cursor.getString(0) + cursor.getString(1));
+
+                            Logger.getLogger("LockLockWorks").info("bindView:" + cursor.getString(0) + cursor.getString(1));
+
+                        }
+                    };
+
+                answerLv.setAdapter(adapter);
+
+
+            }
+        });
+
+        answerLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //showNewOrEditWordDialogFragment()
+                Cursor cursor = (Cursor) answerLv.getAdapter().getItem(position);
+                LockLockWorksContract.Word word = new LockLockWorksContract.Word(cursor);
+                if(word.getRowId() == questionWord.getRowId()){
+                    SharedPreferences sp =   PreferenceManager.getDefaultSharedPreferences (FullscreenActivity.this);
+                    word.setRank(word.getRank() + Integer.parseInt( sp.getString(LOCK_SCREEN_RANK_PREF,"5") ) );
+                    word.update(FullscreenActivity.this);
+                    dismiss();
+                }else{
+                    Snackbar.make(view, "Wrong! Wrong! Wrong!", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                }
+
+            }
+        });
+
+        cl.startLoading();
+
     }
 
 
-    /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
-    }
+
+
+
 
     public void onClickDummyBtn(View view) {
-//        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        dismiss();
+    }
+
+    public void dismiss() {
+        //        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
 //Unlock
         Window window = getWindow();

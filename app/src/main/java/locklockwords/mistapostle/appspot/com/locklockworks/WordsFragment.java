@@ -31,7 +31,7 @@ import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContr
 /**
  * A placeholder fragment containing a simple view.
  */
-public class WordsFragment extends Fragment implements CompoundButton.OnCheckedChangeListener {
+public class WordsFragment extends Fragment {
     /**
      * The fragment argument representing the section number for this
      * fragment.
@@ -61,9 +61,16 @@ public class WordsFragment extends Fragment implements CompoundButton.OnCheckedC
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
-        ToggleButton tb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
-        tb.setOnCheckedChangeListener(this);
 
+
+        ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
+        lockScreenTb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getContext(),FullscreenActivity.class);
+                startActivity(i);
+            }
+        });
         initAddWordBtn(rootView);
 
         final ListView wordLv = (ListView) rootView.findViewById(R.id.word_lv);
@@ -72,7 +79,7 @@ public class WordsFragment extends Fragment implements CompoundButton.OnCheckedC
             @Override
             public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
                 Logger.getLogger("LockLockWorks").info("data = " + data);
-                if (wordLv != null) {
+                if (wordLv.getAdapter() == null) {
                     CursorAdapter adapter = new CursorAdapter(getContext(), data, false) {
                         @Override
                         public View newView(Context context, Cursor cursor, ViewGroup parent) {
@@ -145,41 +152,9 @@ public class WordsFragment extends Fragment implements CompoundButton.OnCheckedC
         dialog.show(getActivity().getSupportFragmentManager(), "NewOrEditWordDialogFragment");
     }
 
-    @Override
-    public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-        switch (compoundButton.getId()) {
-            case R.id.lockScreenTb: {
-                if (checked) {
-                    enableLockScreen();
-                } else {
-                    disableLookScreen();
-                }
-                break;
-            }
-            default: {
 
-            }
-        }
-    }
 
-    private void disableLookScreen() {
-        Activity activity = this.getActivity();
-        activity.stopService(new Intent(activity, LockScreenService.class));
-        Snackbar.make(this.getView(), "Disabled Lock scrren", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
 
-    }
-
-    private void enableLockScreen() {
-        Activity activity = this.getActivity();
-        activity.startService(new Intent(activity, LockScreenService.class));
-//            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-//            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-        Snackbar.make(this.getView(), "Enabled Lock scrren", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-        // android.R.drawable.ic_input_add
-
-    }
 
     @Override
     public void onAttach(Context context) {
