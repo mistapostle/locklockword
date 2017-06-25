@@ -62,12 +62,11 @@ public class WordsFragment extends Fragment {
         textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
 
-
         ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
         lockScreenTb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getContext(),FullscreenActivity.class);
+                Intent i = new Intent(getContext(), FullscreenActivity.class);
                 startActivity(i);
             }
         });
@@ -83,17 +82,21 @@ public class WordsFragment extends Fragment {
                     CursorAdapter adapter = new CursorAdapter(getContext(), data, false) {
                         @Override
                         public View newView(Context context, Cursor cursor, ViewGroup parent) {
-                            TextView tv = new TextView(context);
+                            LayoutInflater inflater = LayoutInflater.from(context);
+                            View v = inflater.inflate(R.layout.item_wordlist, parent, false);
                             // tv.setText(cursor.getString(0) + cursor.getString(1));
                             Logger.getLogger("LockLockWorks").info("newView:" + cursor.getString(0) + cursor.getString(1));
-                            return tv;
+                            return v;
                         }
 
                         @Override
                         public void bindView(View view, Context context, Cursor cursor) {
-                            TextView tv = (TextView) view;
-                            tv.setText(cursor.getString(0) + cursor.getString(1));
+                            TextView wordTv = (TextView) view.findViewById(R.id.wordTv);
+                            wordTv.setText(cursor.getString(1));
 
+
+                            TextView rankTv = (TextView) view.findViewById(R.id.rankTv);
+                            rankTv.setText(Integer.toString(cursor.getInt(4)));
                             Logger.getLogger("LockLockWorks").info("bindView:" + cursor.getString(0) + cursor.getString(1));
 
                         }
@@ -153,9 +156,6 @@ public class WordsFragment extends Fragment {
     }
 
 
-
-
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -164,6 +164,6 @@ public class WordsFragment extends Fragment {
 
     public void reloadWordLv() {
         cl.reset();
-        cl.startLoading();
+        //cl.startLoading();
     }
 }

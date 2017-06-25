@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class LockLockWorksDbHelper extends SQLiteOpenHelper implements AutoCloseable {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 7;
+    public static final int DATABASE_VERSION = 8;
     public static final String DATABASE_NAME = "WordDb.db";
 
     public LockLockWorksDbHelper(Context context) {

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
 import java.io.IOException;
@@ -106,12 +107,36 @@ public class NewOrEditWordDialogFragment extends DialogFragment {
                 final EditText nameEt = (EditText) alertDialog.findViewById(R.id.name);
                 final EditText descEt = (EditText) alertDialog.findViewById(R.id.desc);
                 final EditText produnceEt = (EditText) alertDialog.findViewById(R.id.produnce);
+                final ImageButton deleteBtn = (ImageButton) alertDialog.findViewById(R.id.deleteBtn);
                 final ProgressBar pb = (ProgressBar) alertDialog.findViewById(R.id.loadingPb);
                 if (existingWord != null) {
                     nameEt.setText(existingWord.getWord());
                     descEt.setText(existingWord.getDesc());
                     produnceEt.setText(existingWord.getPronounce());
                 }
+                deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (existingWord != null) {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                            alert.setTitle("Delete");
+                            alert.setMessage(String.format("Are you sure you want to delete \" %s \"?", nameEt.getText().toString()));
+                            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    existingWord.delete(getContext());
+                                    dialog.dismiss();
+                                    alertDialog.dismiss();
+                                    ((MainActivity) getActivity()).getCurrentFrame().reloadWordLv();
+                                }
+                            });
+                            alert.show();
+                        }
+
+                    }
+                });
 
                 Button button = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
                 button.setOnClickListener(new View.OnClickListener() {

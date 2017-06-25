@@ -38,7 +38,8 @@ public final class LockLockWorksContract {
                 + COLUMN_NAME_WORD + " text,"
                 + COLUMN_NAME_PRONOUNCE + " text,"
                 + COLUMN_NAME_DESC + " text,"
-                + COLUMN_NAME_RANK + " INTEGER"
+                + COLUMN_NAME_RANK + " INTEGER , "
+                + "UNIQUE ( " + COLUMN_NAME_WORD + "  ) on conflict fail "
                 + ")";
         private  int rank;
         private String word;
@@ -95,13 +96,28 @@ public final class LockLockWorksContract {
             }.exec();
         }
 
+        public void delete(Context ctx) {
+            new DBTemplate(ctx) {
+                @Override
+                public Object callback(SQLiteDatabase db) {
+                    ContentValues cv = new ContentValues(2);
+                    cv.put(COLUMN_NAME_WORD, word);
+                    cv.put(COLUMN_NAME_DESC, desc);
+                    cv.put(COLUMN_NAME_PRONOUNCE, pronounce);
+                    cv.put(COLUMN_NAME_RANK, rank);
+                    db.delete(TABLE_NAME, COLUMN_NAME_ID + "= ? ", new String[]{Integer.toString(rowId)});
+                    return null;
+                }
+            }.exec();
+        }
+
         public static CursorLoader getAllWordsLoader(final Context ctx) {
             // new CursorLoader(ctx,null,new String[]{"proj"}, "sel" ,new String[]{"selArg"},"sortOrder");
             CursorLoader cl = new CursorLoader(ctx) {
                 @Override
                 public Cursor loadInBackground() {
                     LockLockWorksDbHelper dbHelper = new LockLockWorksDbHelper(ctx);
-                    // You better know how to get your database.
+                    // You better know how to get y`our database.
                     SQLiteDatabase db = dbHelper.getReadableDatabase();
                     // You can use any query that returns a cursor.
                     return db.query(TABLE_NAME, ALL_COLUMNS,
@@ -121,7 +137,8 @@ public final class LockLockWorksContract {
                 @Override
                 public Object callback(SQLiteDatabase db) {
                     Cursor c = db.query(TABLE_NAME, ALL_COLUMNS,
-                            null, null, null, null, COLUMN_NAME_RANK + " asc", "1");
+                            null, null, null, null, " case  when RANK < 100 then  RANK *  (abs(random() % 50) + 50  ) " +
+                                    "else    RANK *  (abs(random() % 10) + 90  )  end asc", "1");
                     c.moveToFirst();
                     Word w = new Word(c);
                     c.close();
