@@ -24,6 +24,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContract;
@@ -59,6 +64,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     private boolean mVisible;
     private LockLockWorksContract.Word  questionWord;
+    private TextView timeTv;
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
@@ -72,6 +78,9 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+
+//        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_fullscreen);
 
@@ -144,11 +153,19 @@ public class FullscreenActivity extends AppCompatActivity {
 
         cl.startLoading();
 
+        initDateTv();
+
     }
 
+    private void initDateTv() {
+        timeTv = (TextView) findViewById(R.id.timeTv);
+        putCurrentTime();
+    }
 
-
-
+    private void putCurrentTime() {
+        SimpleDateFormat sf = new SimpleDateFormat("MM-dd EEE HH:mm");
+        timeTv.setText(sf.format(new Date()));
+    }
 
 
     public void onClickDummyBtn(View view) {
