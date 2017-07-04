@@ -79,7 +79,7 @@ public class WordsFragment extends Fragment {
             public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
                 Logger.getLogger("LockLockWorks").info("data = " + data);
                 if (wordLv.getAdapter() == null) {
-                    CursorAdapter adapter = new CursorAdapter(getContext(), data, false) {
+                    CursorAdapter adapter = new CursorAdapter(getContext(), data, true) {
                         @Override
                         public View newView(Context context, Cursor cursor, ViewGroup parent) {
                             LayoutInflater inflater = LayoutInflater.from(context);
@@ -105,8 +105,8 @@ public class WordsFragment extends Fragment {
                     wordLv.setAdapter(adapter);
                 } else {
                     CursorAdapter adapter = (CursorAdapter) wordLv.getAdapter();
-                    adapter.changeCursor(data);
-//                        adapter.swapCursor(data);
+                    // adapter.changeCursor(data);
+                    adapter.swapCursor(data);
                     // adapter.notifyDataSetChanged();
 //                        wordLv.invalidate();
 //                        wordLv.invalidateViews();
@@ -164,6 +164,6 @@ public class WordsFragment extends Fragment {
 
     public void reloadWordLv() {
         cl.reset();
-        //cl.startLoading();
+        cl.startLoading();
     }
 }

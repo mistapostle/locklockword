@@ -153,8 +153,14 @@ public class FullscreenActivity extends AppCompatActivity {
 
         cl.startLoading();
 
-        initDateTv();
 
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initDateTv();
     }
 
     private void initDateTv() {
