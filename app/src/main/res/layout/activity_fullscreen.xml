@@ -38,12 +38,15 @@
         android:id="@+id/questionTv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
         android:textColor="#33b5e5"
         android:textSize="30sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:maxLines="4"
+        android:scrollbars="vertical" />
     <ListView
         android:id="@+id/answerLv"
         android:layout_width="match_parent"
@@ -70,6 +73,7 @@
             <Button
                 android:id="@+id/dummy_button"
                 style="?metaButtonBarButtonStyle"
+                android:visibility="gone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

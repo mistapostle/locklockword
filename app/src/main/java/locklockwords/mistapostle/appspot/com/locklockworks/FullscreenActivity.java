@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.preference.PreferenceManager;
+import android.text.method.ScrollingMovementMethod;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -96,6 +97,7 @@ public class FullscreenActivity extends AppCompatActivity {
         if(questionWord!=null){
             TextView questionTv = (TextView)findViewById(R.id.questionTv);
             questionTv.setText(questionWord.getDesc());
+            questionTv.setMovementMethod(new ScrollingMovementMethod());
 
         }
         final ListView answerLv  =(ListView)findViewById(R.id.answerLv);
@@ -185,9 +187,12 @@ public class FullscreenActivity extends AppCompatActivity {
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
+
 //Lock device
-        DevicePolicyManager mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        android.os.Process.killProcess(android.os.Process.myPid());
+//        DevicePolicyManager mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+//        android.os.Process.killProcess(android.os.Process.myPid());
+
+        finish();
     }
 
 

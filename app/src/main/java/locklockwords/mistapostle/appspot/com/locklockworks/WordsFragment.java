@@ -27,6 +27,7 @@ import android.widget.ToggleButton;
 import java.util.logging.Logger;
 
 import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContract;
+import locklockwords.mistapostle.appspot.com.locklockworks.utils.LoggerUtils;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -55,24 +56,15 @@ public class WordsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_wordlist, container, false);
-        TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-        textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+    public void onResume() {
+        super.onResume();
+        LoggerUtils.getLogger().info("WordsFragment onResume");
+        createWordsLoader();
+    }
 
-
-        ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
-        lockScreenTb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getContext(), FullscreenActivity.class);
-                startActivity(i);
-            }
-        });
-        initAddWordBtn(rootView);
-
-        final ListView wordLv = (ListView) rootView.findViewById(R.id.word_lv);
+    public void createWordsLoader() {
+        //TODO: why getView() will be null ??!?!?!? it happens when  after android.os.Process.killProcess(android.os.Process.myPid()) and the mainActivity resumed automatically  as it's the latest Activity at background
+        final ListView wordLv = (ListView) getView().findViewById(R.id.word_lv);
         cl = LockLockWorksContract.Word.getAllWordsLoader(getContext());
         cl.registerListener(1, new Loader.OnLoadCompleteListener<Cursor>() {
             @Override
@@ -126,6 +118,27 @@ public class WordsFragment extends Fragment {
         });
 
         cl.startLoading();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_wordlist, container, false);
+        TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+        textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+
+
+        ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
+        lockScreenTb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getContext(), FullscreenActivity.class);
+                startActivity(i);
+            }
+        });
+        initAddWordBtn(rootView);
+
+
         return rootView;
     }
 
@@ -163,7 +176,14 @@ public class WordsFragment extends Fragment {
     }
 
     public void reloadWordLv() {
-        cl.reset();
-        cl.startLoading();
+        if (cl == null) {
+            // //TODO: note: cl would be null
+            // as it seems when system resume a activity it may don't call fragment recall onCreateView/onResume ??? , but use the cached view directly
+
+            createWordsLoader();
+        } else {
+            cl.reset();
+            cl.startLoading();
+        }
     }
 }
