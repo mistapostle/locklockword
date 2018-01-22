@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.Random;
 
 import locklockwords.mistapostle.appspot.com.locklockworks.MainActivity;
+import locklockwords.mistapostle.appspot.com.locklockworks.utils.WordsLoader;
 
 /**
  * Created by mistapostle on 17/6/12.
@@ -30,7 +31,8 @@ public final class LockLockWorksContract {
         public static final String COLUMN_NAME_PRONOUNCE = "PRONOUNCE";
         public static final String COLUMN_NAME_WORD = "WORD";
         public static final String COLUMN_NAME_DESC = "DESC";
-        private static final String COLUMN_NAME_RANK = "RANK ";
+        public static final String COLUMN_NAME_RANK = "RANK ";
+        public static final String COLUMN_NAME_CREATE_TIME = "CREATE_TIME ";
         public static final String[] ALL_COLUMNS = {
                 COLUMN_NAME_ID, COLUMN_NAME_WORD, COLUMN_NAME_PRONOUNCE, COLUMN_NAME_DESC,COLUMN_NAME_RANK};
         public static final String SQL_CREATE_ENTRIES = "create table " + TABLE_NAME
@@ -41,6 +43,8 @@ public final class LockLockWorksContract {
                 + COLUMN_NAME_RANK + " INTEGER , "
                 + "UNIQUE ( " + COLUMN_NAME_WORD + "  ) on conflict fail "
                 + ")";
+        public static final String SQL_ADD_CREATE_TIME = "alter table " + TABLE_NAME
+                + " add " + COLUMN_NAME_CREATE_TIME + " date";
         private  int rank;
         private String word;
         private String pronounce;
@@ -111,9 +115,9 @@ public final class LockLockWorksContract {
             }.exec();
         }
 
-        public static CursorLoader getAllWordsLoader(final Context ctx) {
+        public static WordsLoader getAllWordsLoader(final Context ctx) {
             // new CursorLoader(ctx,null,new String[]{"proj"}, "sel" ,new String[]{"selArg"},"sortOrder");
-            CursorLoader cl = new CursorLoader(ctx) {
+            WordsLoader cl = new WordsLoader(ctx) {
                 @Override
                 public Cursor loadInBackground() {
                     LockLockWorksDbHelper dbHelper = new LockLockWorksDbHelper(ctx);
@@ -121,7 +125,7 @@ public final class LockLockWorksContract {
                     SQLiteDatabase db = dbHelper.getReadableDatabase();
                     // You can use any query that returns a cursor.
                     return db.query(TABLE_NAME, ALL_COLUMNS,
-                            null, null, null, null, COLUMN_NAME_RANK + " asc", null);
+                            null, null, null, null, order, null);
                 }
 
                 @Override

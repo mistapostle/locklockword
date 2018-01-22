@@ -13,27 +13,21 @@
     android:paddingTop="@dimen/activity_vertical_margin"
    >
 
-    <TextView
-        android:id="@+id/section_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true" />
 
-    <ToggleButton
-        android:text="s"
+    <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/lockScreenTb"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:checked="false" />
+        android:id="@+id/orderByspinner"
+        android:entries="@array/orderByspinnerarr"
+        android:layout_gravity="top|right" />
+
 
     <ListView
         android:id="@+id/word_lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/lockScreenTb"
+        android:layout_below="@+id/orderByspinner"
         android:layout_marginTop="21dp" />
 
     <android.support.design.widget.FloatingActionButton

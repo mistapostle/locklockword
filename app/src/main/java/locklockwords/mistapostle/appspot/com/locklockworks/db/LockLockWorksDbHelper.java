@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class LockLockWorksDbHelper extends SQLiteOpenHelper implements AutoCloseable {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 8;
+    public static final int DATABASE_VERSION = 9;
     public static final String DATABASE_NAME = "WordDb.db";
 
     public LockLockWorksDbHelper(Context context) {
@@ -25,8 +25,12 @@ public class LockLockWorksDbHelper extends SQLiteOpenHelper implements AutoClose
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        db.execSQL(LockLockWorksContract.Word.SQL_DELETE_ENTRIES);
-        onCreate(db);
+        if (oldVersion < 8) {
+            db.execSQL(LockLockWorksContract.Word.SQL_DELETE_ENTRIES);
+            onCreate(db);
+        } else {
+            db.execSQL(LockLockWorksContract.Word.SQL_ADD_CREATE_TIME);
+        }
     }
 
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {

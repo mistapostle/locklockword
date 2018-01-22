@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -28,6 +29,7 @@ import java.util.logging.Logger;
 
 import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContract;
 import locklockwords.mistapostle.appspot.com.locklockworks.utils.LoggerUtils;
+import locklockwords.mistapostle.appspot.com.locklockworks.utils.WordsLoader;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -38,7 +40,7 @@ public class WordsFragment extends Fragment {
      * fragment.
      */
     private static final String ARG_SECTION_NUMBER = "section_number";
-    private CursorLoader cl;
+    private WordsLoader cl;
 
     public WordsFragment() {
     }
@@ -116,7 +118,7 @@ public class WordsFragment extends Fragment {
                 showNewOrEditWordDialogFragment(word);
             }
         });
-
+        cl.order = LockLockWorksContract.Word.COLUMN_NAME_RANK + " asc";
         cl.startLoading();
     }
 
@@ -124,21 +126,33 @@ public class WordsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_wordlist, container, false);
-        TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-        textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+        //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+        //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
 
-        ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
-        lockScreenTb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getContext(), FullscreenActivity.class);
-                startActivity(i);
-            }
-        });
+//        ToggleButton lockScreenTb = (ToggleButton) rootView.findViewById(R.id.lockScreenTb);
+//        lockScreenTb.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent i = new Intent(getContext(), FullscreenActivity.class);
+//                startActivity(i);
+//            }
+//        });
         initAddWordBtn(rootView);
 
+        Spinner sb = (Spinner) rootView.findViewById(R.id.orderByspinner);
+        sb.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                reloadWordLv();
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+
+        });
         return rootView;
     }
 
@@ -183,7 +197,17 @@ public class WordsFragment extends Fragment {
             createWordsLoader();
         } else {
             cl.reset();
+            cl.order = getOrder();
             cl.startLoading();
         }
+    }
+
+    private String getOrder() {
+        Spinner sb = (Spinner) getView().findViewById(R.id.orderByspinner);
+        String v = (String) sb.getSelectedItem();
+        if ("create time".equals(v)) {
+            return LockLockWorksContract.Word.COLUMN_NAME_CREATE_TIME + ", " + LockLockWorksContract.Word.COLUMN_NAME_ID + " desc";
+        }
+        return LockLockWorksContract.Word.COLUMN_NAME_RANK + " asc";
     }
 }
