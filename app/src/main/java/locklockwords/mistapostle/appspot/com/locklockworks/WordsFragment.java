@@ -118,7 +118,7 @@ public class WordsFragment extends Fragment {
                 showNewOrEditWordDialogFragment(word);
             }
         });
-        cl.order = LockLockWorksContract.Word.COLUMN_NAME_RANK + " asc";
+        cl.order = getOrder();
         cl.startLoading();
     }
 

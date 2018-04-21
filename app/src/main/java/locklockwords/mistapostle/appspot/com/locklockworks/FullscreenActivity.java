@@ -30,6 +30,9 @@ import org.w3c.dom.Text;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import locklockwords.mistapostle.appspot.com.locklockworks.db.LockLockWorksContract;
@@ -59,6 +62,7 @@ public class FullscreenActivity extends AppCompatActivity {
      */
     private static final int UI_ANIMATION_DELAY = 300;
     private final Handler mHideHandler = new Handler();
+    ScheduledExecutorService scheduler;
     //private View mContentView;
 
 
@@ -140,12 +144,15 @@ public class FullscreenActivity extends AppCompatActivity {
                 //showNewOrEditWordDialogFragment()
                 Cursor cursor = (Cursor) answerLv.getAdapter().getItem(position);
                 LockLockWorksContract.Word word = new LockLockWorksContract.Word(cursor);
+
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(FullscreenActivity.this);
                 if(word.getRowId() == questionWord.getRowId()){
-                    SharedPreferences sp =   PreferenceManager.getDefaultSharedPreferences (FullscreenActivity.this);
                     word.setRank(word.getRank() + Integer.parseInt( sp.getString(LOCK_SCREEN_RANK_PREF,"5") ) );
                     word.update(FullscreenActivity.this);
                     dismiss();
                 }else{
+                    word.setRank(word.getRank() - Integer.parseInt(sp.getString(LOCK_SCREEN_RANK_PREF, "5")));
+                    word.update(FullscreenActivity.this);
                     Snackbar.make(view, "Wrong! Wrong! Wrong!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 }
@@ -163,6 +170,38 @@ public class FullscreenActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         initDateTv();
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                mHideHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        putCurrentTime();
+                    }
+                });
+            }
+        }, 60, 60, TimeUnit.SECONDS);
+        scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                mHideHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        dismiss();
+                    }
+                });
+            }
+        }, 3 * 60, TimeUnit.SECONDS);
+
+    }
+
+
+    @Override
+    protected void onStop() {
+        scheduler.shutdownNow();
+        super.onStop();
+
     }
 
     private void initDateTv() {
